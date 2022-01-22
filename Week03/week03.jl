@@ -71,7 +71,7 @@ function chol_psd!(root,a)
   
         #Diagonal Element
         temp = a[j,j] .- s
-        if 0 => temp => -1e-8
+        if 0 >= temp >= -1e-8
             temp = 0.0
         end
         root[j,j] =  sqrt(temp);
@@ -93,7 +93,7 @@ end
 
 chol_psd!(root,sigma)
 
-root*root' == sigma
+root*root' ≈ sigma
 
 root2 = cholesky(sigma).L
 
@@ -170,6 +170,8 @@ eigvals(pairwise)
 chol_psd!(root,skipMiss)
 chol_psd!(root,pairwise)
 
+
+
 #Look at Exponential Weights
 weights = DataFrame()
 cumulative_weights = DataFrame()
@@ -195,7 +197,7 @@ end
 
 #calculated weights λ=97%
 populateWeights!(x,w,cumulative_w,0.97)
-weights[!,:x] = x
+weights[!,:x] = copy(x)
 weights[!,Symbol("λ=0.97")] = copy(w)
 cumulative_weights[!,:x] = copy(x)
 cumulative_weights[!,Symbol("λ=0.97")] = copy(cumulative_w)
