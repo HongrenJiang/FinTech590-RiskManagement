@@ -122,9 +122,11 @@ Random.seed!(2)
 x = generate_with_missing(10,5,pmiss=.2)
 cov(x)
 
+#calculate either the covariance or correlation function when there are missing values
 function missing_cov(x; skipMiss=true, fun=cov)
     n,m = size(x)
     nMiss = count.(ismissing, eachcol(x))
+    #nothing missing, just calculate it.
     if 0==sum(nMiss)
         return fun(x)
     end
@@ -195,11 +197,21 @@ function populateWeights!(x,w,cw, λ)
     end
 end
 
+#calculated weights λ=75%
+populateWeights!(x,w,cumulative_w,0.75)
+weights[!,:x] = copy(x)
+weights[!,Symbol("λ=0.75")] = copy(w)
+cumulative_weights[!,:x] = copy(x)
+cumulative_weights[!,Symbol("λ=0.75")] = copy(cumulative_w)
+
+#calculated weights λ=90%
+populateWeights!(x,w,cumulative_w,0.90)
+weights[!,Symbol("λ=0.90")] = copy(w)
+cumulative_weights[!,Symbol("λ=0.90")] = copy(cumulative_w)
+
 #calculated weights λ=97%
 populateWeights!(x,w,cumulative_w,0.97)
-weights[!,:x] = copy(x)
 weights[!,Symbol("λ=0.97")] = copy(w)
-cumulative_weights[!,:x] = copy(x)
 cumulative_weights[!,Symbol("λ=0.97")] = copy(cumulative_w)
 
 #calculated weights λ=99%
@@ -207,15 +219,7 @@ populateWeights!(x,w,cumulative_w,0.99)
 weights[!,Symbol("λ=0.99")] = copy(w)
 cumulative_weights[!,Symbol("λ=0.99")] = copy(cumulative_w)
 
-#calculated weights λ=90%
-populateWeights!(x,w,cumulative_w,0.90)
-weights[!,Symbol("λ=0.90")] = copy(w)
-cumulative_weights[!,Symbol("λ=0.90")] = copy(cumulative_w)
 
-#calculated weights λ=75%
-populateWeights!(x,w,cumulative_w,0.75)
-weights[!,Symbol("λ=0.75")] = copy(w)
-cumulative_weights[!,Symbol("λ=0.75")] = copy(cumulative_w)
 
 cnames = names(weights)
 cnames = cnames[findall(x->x!="x",cnames)]
@@ -232,7 +236,7 @@ plot(cumulative_weights.x,Array(cumulative_weights[:,cnames]), label=hcat(cnames
 
 
 
-#Nearest PSD Matrix
+#Near PSD Matrix
 function near_psd(a; epsilon=0.0)
     n = size(a,1)
 
