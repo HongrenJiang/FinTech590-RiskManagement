@@ -46,11 +46,7 @@ root*root' ≈ sigma
 
 root2 = cholesky(sigma).L
 root ≈ root2
-
-#make the matrix PSD
-sigma[1,2] = 1.0
-sigma[2,1] = 1.0
-
+sigma
 eigvals(sigma)
 
 chol_pd!(root,sigma)
@@ -187,7 +183,7 @@ function populateWeights!(x,w,cw, λ)
     tw = 0.0
     for i in 1:n
         x[i] = i
-        w[i] = (1-λ)*λ^i
+        w[i] = (1-λ)*λ^(i-1)
         tw += w[i]
         cw[i] = tw
     end
