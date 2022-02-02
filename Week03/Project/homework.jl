@@ -12,8 +12,7 @@ using CSV
 rets = CSV.read("Project/DailyReturn.csv",DataFrame)
 nm = names(rets)
 nm = nm[nm.!="Column1"]
-rets = rets[!,2:11]
-ewc = ewCovar(Matrix(rets[!,:]),0.94)
+
 
 #Function to calculate expoentially weighted covariance.  
 function ewCovar(x,λ)
