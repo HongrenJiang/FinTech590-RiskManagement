@@ -12,6 +12,8 @@ using CSV
 rets = CSV.read("Project/DailyReturn.csv",DataFrame)
 nm = names(rets)
 nm = nm[nm.!="Column1"]
+rets = rets[!,2:11]
+ewc = ewCovar(Matrix(rets[!,:]),0.94)
 
 #Function to calculate expoentially weighted covariance.  
 function ewCovar(x,λ)
@@ -20,7 +22,7 @@ function ewCovar(x,λ)
 
     #Remove the mean from the series
     xm = mean.(eachcol(x))
-    for j in 1:m
+    for j in 1:n
         x[:,j] = x[:,j] .- xm[j]
     end
 
@@ -187,6 +189,10 @@ function higham_nearestPSD(pc,W=nothing, epsilon=1e-9,maxIter=100,tol=1e-9)
         norm = wgtNorm(Yk-pc,W)
         #Smallest Eigenvalue
         minEigVal = min(real.(eigvals(Yk))...)
+
+        # print("Yk: "); display(Yk)
+        # print("Xk: "); display(Xk)
+        # print("deltaS: "); display(deltaS)
 
         if norm - norml < tol && minEigVal > -epsilon
             # Norm converged and matrix is at least PSD
@@ -374,7 +380,7 @@ pearson_cor = cor(Matrix(rets[!,nm]))
 
 ewma_cov = ewCovar(Matrix(rets[!,nm]),0.97)
 ewma_std = sqrt.(diag(ewma_cov))
-ewma_cor = diagm(1 ./ewma_std) * ewma_cov * diagm(1 ./ewma_std)
+ewma_cor = diagm(1 ./ ewma_std) * ewma_cov * diagm(1 ./ewma_std)
 
 
 matrixType = ["EWMA", "EWMA_COR_PEARSON_STD", "PEARSON", "PEARSON_COR_EWMA_STD"]
