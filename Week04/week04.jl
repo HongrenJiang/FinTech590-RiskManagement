@@ -15,7 +15,7 @@ alpha = 0.05
 d = TDist(10)*5+1.0
 
 #The alpha-percentile is VaR
-VaR = quantile(d,alpha)
+VaR = -quantile(d,alpha)
 println(VaR)
 
 x = [i for i in -25:0.1:25]
@@ -33,11 +33,10 @@ plot!(x2, df.pdf[1:size(x2,1)],legend=false, fill=(0,.5,:red), linecolor=:black,
 rets = CSV.read("DailyReturn.csv",DataFrame)
 
 spy = rets.SPY
-spy = spy .- mean(spy)
 sd = std(spy)
 
-VaR_05 = quantile(Normal(0,sd),.05)
-VaR_01 = quantile(Normal(0,sd),.01)
+VaR_05 = -quantile(Normal(0,sd),.05)
+VaR_01 = -quantile(Normal(0,sd),.01)
 
 # spy_GFC = DataFrame(yahoo("SPY", YahooOpt(period1 = DateTime(2008,9,1), period2=DateTime(2009,4,1))))
 # CSV.write("spy_gfc.csv",spy_GFC)
@@ -56,12 +55,13 @@ println("1% VaR: $(round(VaR_01*100,digits=2))%")
 #What happened during the GFC
 max_loss = min(spy_GFC.return...)
 println("Maximum Loss During the GFC: $(round(max_loss*100,digits=2))%")
+
+
 zscore = max_loss/sd
 ml_cdf = cdf(Normal(),zscore)
 println("Loss is $(round(zscore,digits=2))σ -->  CDF(loss)=$ml_cdf")
 
 universe_days = 14_000_000_000*365.25*24*60
-
 p0 = (big"1.0"-convert(BigFloat,ml_cdf))^(universe_days)
 println("Probability of not seeing a $(round(zscore,digits=2))σ day for the life of the universe = $(100*p0)%")
 
@@ -155,6 +155,7 @@ PV = 0.0
 delta = Vector{Float64}(undef,length(nm))
 i=1
 for s in nm
+    global i, PV
     value = holdings[s] * current_prices[s]
     PV += value
     delta[i] = value

@@ -52,7 +52,7 @@ sigma[1,2] = 1.0
 sigma[2,1] = 1.0
 eigvals(sigma)
 
-# chol_pd!(root,sigma)
+chol_pd!(root,sigma)
 
 #Cholesky that assumes PSD
 function chol_psd!(root,a)
@@ -94,14 +94,14 @@ chol_psd!(root,sigma)
 
 root*root' ≈ sigma
 
-# root2 = cholesky(sigma).L
+root2 = cholesky(sigma).L
 
 #make the matrix slightly non-definite
 sigma[1,2] = 0.7357
 sigma[2,1] = 0.7357
 eigvals(sigma)
 
-# chol_psd!(root,sigma)
+chol_psd!(root,sigma)
 
 
 
@@ -169,7 +169,7 @@ pairwise = missing_cov(x,skipMiss=false)
 eigvals(pairwise)
 
 chol_psd!(root,skipMiss)
-# chol_psd!(root,pairwise)
+chol_psd!(root,pairwise)
 
 
 
@@ -322,4 +322,3 @@ cov(sim)
 sim = simulate_pca(sigma,10000; nval=2)
 cov(sim)
 
-include("Project/homework.jl")

@@ -140,7 +140,7 @@ end
 function _getAplus(A)
     vals, vecs =eigen(A)
     vals = diagm(max.(vals,0))
-    return vecs*vals*vecs'
+    return vecs * vals*vecs'
 end
 
 function _getPS(A,W)
