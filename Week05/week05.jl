@@ -14,6 +14,35 @@ using Ipopt
 using StateSpaceModels
 using StatsBase
 
+#Expected Shortfall
+function VaR_ES(x,alpha=0.05)
+    xs = sort(x)
+    n = alpha*size(xs,1)
+    iup = convert(Int64,ceil(n))
+    idn = convert(Int64,floor(n))
+    VaR = (xs[iup] + xs[idn])/2
+    ES = mean(xs[1:idn])
+
+    return -VaR, -ES
+end
+
+nSim = 10000
+nDist = Normal(0,.05)
+simNorm = rand(nDist,nSim)
+
+normVaR, normES = VaR_ES(simNorm)
+
+eNormVaR = -quantile(nDist,0.05)
+
+eNormES = 0.05*pdf(Normal(),quantile(Normal(),0.05))/0.05
+
+println("VaR ($normVaR) vs Expected VaR ($eNormVaR)")
+println("ES ($normES) vs Expected ES ($eNormES)")
+
+
+
+
+#Model Simulation
 include("../Week04/return_calculate.jl")
 prices = CSV.read("DailyPrices.csv",DataFrame)
 current_prices = prices[size(prices,1),:]
@@ -214,5 +243,7 @@ plot!(normal[:,1],normal[:,2],seriestype=:scatter,label="Normal Model",color=:vi
 plot!(spy,tsla,seriestype=:scatter,label="Empirical",color=:green)
 xlabel!("SPY")
 ylabel!("TSLA")
+
+
 
 
