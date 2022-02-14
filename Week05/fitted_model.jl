@@ -77,6 +77,54 @@ function fit_regression_t(y,x)
     return FittedModel(beta, errorModel, eval_model, errors, u)
 end
 
+#MLE for a Generalize T
+function fit_general_t(x)
+    global __x
+    __x = x
+    mle = Model(Ipopt.Optimizer)
+    set_silent(mle)
+
+    #approximate values based on moments
+    start_m = mean(x)
+    start_nu = 6.0/kurtosis(x) + 4
+    start_s = sqrt(var(x)*(start_nu-2)/start_nu)
+
+    @variable(mle, m, start=start_m)
+    @variable(mle, s>=1e-6, start=1)
+    @variable(mle, nu>=2.0001, start=start_s)
+
+    #Inner function to abstract away the X value
+    function _gtl(mu,s,nu)
+        general_t_ll(mu,s,nu,__x)
+    end
+
+    register(mle,:tLL,3,_gtl;autodiff=true)
+    @NLobjective(
+        mle,
+        Max,
+        tLL(m, s, nu)
+    )
+    optimize!(mle)
+
+    m = value(m)
+    s = value(s)
+    nu = value(nu)
+
+    #create the error model
+    errorModel = TDist(nu)*s + m
+    #calculate the errors and U
+    errors = x .- m
+    u = cdf(errorModel,x)
+
+    eval(u) = quantile(errorModel,u)
+
+    return FittedModel(nothing, errorModel, eval, errors, u)
+
+    #return the parameters as well as the Distribution Object
+    return (m, s, nu, TDist(nu)*s+m)
+end
+
+
 function fit_normal(x)
     #Mean and Std values
     m = mean(x)

@@ -21,6 +21,8 @@ function VaR_ES(x,alpha=0.05)
     iup = convert(Int64,ceil(n))
     idn = convert(Int64,floor(n))
     VaR = (xs[iup] + xs[idn])/2
+
+
     ES = mean(xs[1:idn])
 
     return -VaR, -ES
@@ -74,7 +76,7 @@ means = means[2:3]
 covar = covar[2:3,2:3]
 
 #simulate and apply the model y = XB + e
-nsim = 10000
+nsim = 100000
 sim = rand(MvNormal(means,covar),nsim)'
 
 x_sim = hcat(fill(1.0,nsim),sim[:,1])
@@ -120,6 +122,7 @@ println("StDev TSLA vs Simulated - $(std(tsla)) vs $(std(tsla_sim))")
 println(" ")
 println("Mean AAPL vs Simulated - $(mean(aapl)) vs $(mean(aapl_sim))")
 println("StDev AAPL vs Simulated - $(std(aapl)) vs $(std(aapl_sim))")
+
 
 #Show block diagonal does not hold when not using the same X values in the simulation
 gm = returns.GM

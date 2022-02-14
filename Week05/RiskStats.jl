@@ -1,5 +1,5 @@
 
-function VaR(a; alpha=0.05)
+function VaR(a::Vector{Float64}; alpha=0.05)
     x = sort(a)
     nup = convert(Int64,ceil(size(a,1)*alpha))
     ndn = convert(Int64,floor(size(a,1)*alpha))
@@ -8,10 +8,24 @@ function VaR(a; alpha=0.05)
     return -v
 end
 
-function ES(a; alpha=0.05)
+function VaR(d::UnivariateDistribution; alpha=0.05)
+    -quantile(d,alpha)
+end
+
+function ES(a::Vector{Float64}; alpha=0.05)
+    #ReWrite VaR code so that we are not forcing a double sort on a
     x = sort(a)
-    v = -VaR(a,alpha=alpha)
+    nup = convert(Int64,ceil(size(a,1)*alpha))
+    ndn = convert(Int64,floor(size(a,1)*alpha))
+    v = 0.5*(x[nup]+x[ndn])
     
     es = mean(x[x.<=v])
     return -es
+end
+
+function ES(d::UnivariateDistribution; alpha=0.05)
+    v = VaR(d;alpha=alpha)
+    f(x) = x*pdf(d,x)
+    st = quantile(d,1e-12)
+    return -quadgk(f,st,-v)[1]/alpha
 end
