@@ -50,6 +50,7 @@ for stock in stocks
     fittedModels[stock] = fit_regression_t(returns[!,stock],returns.SPY)
 end
 println("Model Fitting Took $(time()-st)")
+
 st = time()
 
 #construct the copula:
@@ -111,6 +112,7 @@ st = time()
 #Calculation of Risk Metrics
 #Stock Level Metrics
 gdf = groupby(values,:stock)
+
 stockRisk = combine(gdf, 
     :currentValue => (x-> first(x,1)) => :currentValue,
     :pnl => (x -> VaR(x,alpha=0.05)) => :VaR95,

@@ -38,8 +38,12 @@ eNormVaR = -quantile(nDist,0.05)
 
 eNormES = 0.05*pdf(Normal(),quantile(Normal(),0.05))/0.05
 
+f(x) = x*pdf(nDist,x)
+st = quantile(nDist,1e-12)
+eNormES2= -quadgk(f,st,-eNormVaR)[1]/.05
+
 println("VaR ($normVaR) vs Expected VaR ($eNormVaR)")
-println("ES ($normES) vs Expected ES ($eNormES)")
+println("ES ($normES) vs Expected ES ($eNormES) vs Expected ES2 ($eNormES2)")
 
 
 
