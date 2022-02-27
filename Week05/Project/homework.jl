@@ -164,3 +164,5 @@ risk = aggRisk(values,[:Portfolio])
 temp = aggRisk(values,Vector{Symbol}(undef,0))
 temp[!,:Portfolio] .= "Total"
 risk = vcat(risk,temp)
+
+# CSV.write("problem3_out.csv", risk)
