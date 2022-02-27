@@ -71,7 +71,7 @@ end
 #construct the copula:
 #Start the data frame with the U of the SPY - we are assuming normallity for SPY
 U = DataFrame()
-for nm in nms
+for nm in stocks
     U[!,nm] = fittedModels[nm].u
 end
 
@@ -93,7 +93,7 @@ simU = DataFrame(
             cdf(Normal(),
                 simulate_pca(R,NSim)  #simulation the standard normals
             )   
-            , nms
+            , stocks
         )
 
 simulatedReturns = DataFrame()
@@ -122,6 +122,7 @@ values[!,:pnl] = pnl
 
 #Calculation of Risk Metrics
 function aggRisk(df,aggLevel::Vector{Symbol})
+    gdf = []
     if !isempty(aggLevel)
         gdf = groupby(df,vcat(aggLevel,[:iteration]))
 
