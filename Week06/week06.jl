@@ -134,6 +134,23 @@ end
 
 OneSampleTTest(ave,call_val)
 
+#Option values greater than payoff:
+values = [i for i in 65:135]
+ttm_vals = [0, .01, .5, 1]
+output = Dict{Float64,DataFrame}()
+
+replace_nan(v) = map(x -> isnan(x) ? zero(x) : x,v)
+for ttm in ttm_vals
+    df = DataFrame(:S=>values)
+    df[!,:call_vals] = gbsm.(true,values,strike,ttm,rf,rf,ivol)
+    df[!,:call_vals] = replace_nan(df.call_vals)
+    output[ttm] = df[:,:]
+end
+
+plot(values,output[ttm_vals[1]].call_vals,label=ttm_vals[1],legend=:topleft)
+plot!(values,output[ttm_vals[2]].call_vals,label=ttm_vals[2])
+plot!(values,output[ttm_vals[3]].call_vals,label=ttm_vals[3])
+plot!(values,output[ttm_vals[4]].call_vals,label=ttm_vals[4])
 
 #put call parity 
 put_val = gbsm(false,underlying,strike,ttm,rf,rf,ivol)
