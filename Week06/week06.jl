@@ -5,6 +5,8 @@ using StatsBase
 using HypothesisTests
 using Roots
 using QuadGK
+using DataFrames
+using Plots
 
 function test(N,r)
     1.0/(1.0+r/N)^N
