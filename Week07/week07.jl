@@ -6,6 +6,9 @@ using Roots
 using QuadGK
 using DataFrames
 using Plots
+using LinearAlgebra
+using JuMP
+using Ipopt
 
 include("../Week06/Project/gbsm.jl")
 
@@ -114,3 +117,106 @@ bt_american(true, 100,100,.5,.08,[1.0,1.0],[1,2],.3,100)
 @btime bt_american(true, 100,100,.5,.08,[1.0],[50],.3,100)
 
 
+#Hedging Example
+S = 100.50
+X = 100
+ttm = 15/255
+rf = 0.0025
+p = 2.5
+
+f(iv) = gbsm(true,S,X,ttm,rf,rf,iv) - p
+implied_vol = find_zero(f,0.2)
+
+nSim = 5000
+pnl = Vector{Float64}(undef,nSim)
+include("../Week05/RiskStats.jl")
+
+#1 Day change, need to update the TTM
+ttm_new = 14/255
+#Simulate Normal based on the implied volatility scaled to daily.
+r = rand(Normal(0,implied_vol/sqrt(255)),nSim)
+
+#Profit and loss
+#100 options short
+# Each long option PNL is new option value minus the starting value
+pnl = -100*(gbsm.(true,S*(1 .+r),X,ttm_new,rf,rf,implied_vol) .- 2.5)
+
+#Calculate the VaR and ES
+var_unhedged = VaR(pnl)
+es_unhedged = ES(pnl)
+
+println("VaR UnHedged: $var_unhedged")
+println("ES UnHedged : $es_unhedged")
+
+
+#MM is short 100 calls.  He wants to buy the negative of his delta to hedge
+delta = -(-100)* (exp((rf-rf)*ttm)*cdf(Normal(),(log(S/X) + (rf+implied_vol^2/2)*ttm)/(implied_vol*sqrt(ttm))))
+delta = round(delta)
+
+#Update the PNL, add the return on the stock times the amount we hold (delta)
+pnl2 = pnl .+ (delta * S * r)
+
+#Recalculate the VaR and ES
+var_hedged = VaR(pnl2)
+es_hedged = ES(pnl2)
+
+println("VaR Hedged: $var_hedged")
+println("ES Hedged : $es_hedged")
+
+
+#Example Efficient Frontier
+corr = [1 .5 0
+        .5 1 .5
+        0 .5 1]
+sd = [.2, .1, .05]
+er = [.05, .04, .03]
+
+covar = diagm(sd)*corr*diagm(sd)
+
+function optimize_risk(R)
+    # R = 0.05
+
+    m = Model(Ipopt.Optimizer)
+    set_silent(m)
+    # Weights with boundry at 0
+    @variable(m, w[i=1:3] >= 0,start=1/3)
+
+    @objective(m,Min, w'*covar*w)
+    @constraint(m, sum(w)==1.0)
+    @constraint(m, sum(er[i]*w[i] for i in 1:3) == R)
+    optimize!(m)
+    #return the objective(risk) as well as the portfolio weights
+    return Dict(:risk=>objective_value(m), :weights=>value.(w), :R=>R)
+end
+
+returns = [i for i in 0.03:.001:.05]
+optim_portfolios = DataFrame(optimize_risk.(returns))
+plot(optim_portfolios.risk, optim_portfolios.R, legend=:bottomright, label="Efficient Frontier", xlabel="Risk - Variance", ylabel="Portfolio Expected Return")
+
+# w = [i for i in 0:.1:1.5]
+# returns = .1*w .+ .05*(1 .-w)
+# risks = .16*w
+# plot(risks, returns, legend=:bottomright, label="", title="Investment A + Rf", xlabel="Risk - SD", ylabel="Portfolio Expected Return")
+# scatter!((.16,.1), label="Investment A")
+
+#Sharpe Ratios
+optim_portfolios[!,:SR] = (optim_portfolios.R .- 0.035)./optim_portfolios.risk
+maxSR = argmax(optim_portfolios.SR)
+maxSR_ret=optim_portfolios.R[maxSR]
+maxSR_risk=optim_portfolios.risk[maxSR]
+
+println("Portfolio Weights at the Maximum Sharpe Ratio: $(optim_portfolios.weights[maxSR])")
+println("Portfolio Return : $maxSR_ret")
+println("Portfolio Risk   : $maxSR_risk")
+println("Portfolio SR     : $(optim_portfolios.SR[maxSR])")
+
+
+
+
+
+
+w = [i for i in 0:.1:3.5]
+returns = maxSR_ret*w .+ .035*(1 .-w)
+risks = maxSR_risk*w
+plot!(risks,returns,label="",color=:red)
+scatter!((maxSR_risk,maxSR_ret),label="Max SR Portfolio")
