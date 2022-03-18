@@ -94,7 +94,7 @@ function bt_american(call::Bool, underlying,strike,ttm,rf,divAmts::Vector{Float6
                 optionValues[idx] = max(optionValues[idx], df*(pu*optionValues[idxFunc(i+1,j+1)] + pd*optionValues[idxFunc(i,j+1)])  )
             else
                 #time of the dividend
-               valNoExercise = bt_american(call, price-divAmts[1], strike, ttm-divTimes[1]*dt, rf, divAmts[2:nDiv], divTimes[2:nDiv], ivol, N-divTimes[1])
+               valNoExercise = bt_american(call, price-divAmts[1], strike, ttm-divTimes[1]*dt, rf, divAmts[2:nDiv], divTimes[2:nDiv] .- divTimes[1], ivol, N-divTimes[1])
                valExercise =  max(0,z*(price-strike))
                optionValues[idx] = max(valNoExercise,valExercise)
             end
