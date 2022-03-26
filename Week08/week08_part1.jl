@@ -41,9 +41,7 @@ xnames = [:Mkt_RF, :SMB, :HML, :Mom]
 
 #OLS Regression for all Stocks
 X = hcat(fill(1.0,size(to_reg,1)),Matrix(to_reg[!,xnames]))
-Y = to_reg.SPY
 
-spy_betas = (inv(X'*X)*X'*Y)[2:size(xnames,1)+1]
 
 Y = Matrix(to_reg[!,stocks])
 Betas = (inv(X'*X)*X'*Y)'[:,2:size(xnames,1)+1]
@@ -82,7 +80,7 @@ optimize!(m)
 w = value.(w)
 w = w / sum(w)
 
-OptWeights = DataFrame(:Stock=>String.(stocks), :Weight => w, :Er => stockMeans)
+OptWeights = DataFrame(:Stock=>String.(stocks), :Weight => w, :cEr => stockMeans .* w)
 println(OptWeights)
 
 #Get Updated Prices 
@@ -162,3 +160,8 @@ Attribution = vcat(Attribution,
 )
 
 println(Attribution)
+
+
+# Factor Attribution...
+
+
