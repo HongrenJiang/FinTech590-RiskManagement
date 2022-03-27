@@ -137,7 +137,7 @@ for i in 1:n
 end
 
 # Set the portfolio return in the Update Return DataFrame
-upFfData[!,:Resid] = residReturn
+upFfData[!,:Alpha] = residReturn
 upFfData[!,:Portfolio] = pReturn
 
 # Calculate the total return
@@ -149,12 +149,12 @@ k = log(totalRet + 1 ) / totalRet
 carinoK = log.(1.0 .+ pReturn) ./ pReturn / k
 # Calculate the return attribution
 attrib = DataFrame(ffReturns .* factorWeights .* carinoK, xnames)
-attrib[!,:Resid] = residReturn .* carinoK
+attrib[!,:Alpha] = residReturn .* carinoK
 
 # Set up a Dataframe for output.
 Attribution = DataFrame(:Value => ["TotalReturn", "Return Attribution"])
 
-newFactors = [xnames..., :Resid]
+newFactors = [xnames..., :Alpha]
 # Loop over the factors
 for s in vcat(newFactors, :Portfolio)
     # Total Stock return over the period
