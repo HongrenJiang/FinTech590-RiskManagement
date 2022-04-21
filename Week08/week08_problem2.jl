@@ -119,7 +119,7 @@ for i in 1:n
     weights[i,:] = lastW
 
     #Factor Weight
-    factorWeights[i,:] = sum.(eachcol(Betas .* w))
+    factorWeights[i,:] = sum.(eachcol(Betas .* lastW))
 
     # Update Weights by return
     lastW = lastW .* (1.0 .+ matReturns[i,:])

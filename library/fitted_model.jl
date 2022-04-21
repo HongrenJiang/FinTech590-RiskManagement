@@ -35,10 +35,11 @@ function fit_regression_t(y,x)
     start_nu = 6.0/kurtosis(e) + 4
     start_s = sqrt(var(e)*(start_nu-2)/start_nu)
 
-    @variable(mle, m, start=start_m)
+    @variable(mle, m)
     @variable(mle, s>=1e-6, start=1)
     @variable(mle, nu>=2.0001, start=start_s)
     @variable(mle, B[i=1:nB],start=b_start[i])
+    @constraint(mle, m==0)
 
     #Inner function to abstract away the X value
     function _gtl(mu,s,nu,B...)
@@ -61,7 +62,7 @@ function fit_regression_t(y,x)
     beta = value.(B)
 
     #Define the fitted error model
-    errorModel = TDist(nu)*s+m
+    errorModel = TDist(nu)*s
 
     #function to evaluate the model for a given x and u
     function eval_model(x,u)

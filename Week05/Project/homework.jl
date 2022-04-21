@@ -53,6 +53,12 @@ include("../simulate.jl")
 include("../../Week04/return_calculate.jl")
 portfolio = CSV.read("Project/portfolio.csv",DataFrame)
 prices = CSV.read("DailyPrices.csv",DataFrame)
+
+#filter portfolio for testing
+# portfolio = portfolio[
+#                 [portfolio.Stock[i] ∈ ["AAPL", "IBM"] for i in 1:length(portfolio.Stock)]
+#                     ,:]
+
 #current Prices
 current_prices = prices[size(prices,1),:]
 
