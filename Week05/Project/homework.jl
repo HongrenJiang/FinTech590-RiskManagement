@@ -62,6 +62,7 @@ prices = CSV.read("DailyPrices.csv",DataFrame)
 #current Prices
 current_prices = prices[size(prices,1),:]
 
+
 #discrete returns
 returns = return_calculate(prices,dateColumn="Date")
 
